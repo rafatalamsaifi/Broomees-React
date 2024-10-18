@@ -14,7 +14,7 @@ const App = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [serverMessage, setServerMessage] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,16 +40,13 @@ const App = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage("submit successfully");
+    setServerMessage("");
     if (validate()) {
       try {
         const response = await axios.post(url, formValues);
 
-        const data = await response.json();
-
-        if (response.ok) {
-          // Handle success
-          setSuccessMessage("Registration Successful!");
+        if (response.status === 201) {
+          setServerMessage(response.data.message);
           setFormValues({
             firstName: "",
             lastName: "",
@@ -60,12 +57,15 @@ const App = () => {
           });
           setErrors({});
         } else {
-          // Handle errors from the server
-          setErrors({ general: data.message || "Registration failed" });
+          
+          setServerMessage(response.data.message);
         }
       } catch (error) {
-        // Handle network or other errors
-        setErrors({ general: "Server error. Please try again later." });
+        if (error.response) {
+          setServerMessage(error.response.data.message);
+        } else {
+          setServerMessage("Server error. Please try again later.");
+        }
       }
     }
   };
