@@ -15,6 +15,7 @@ const App = () => {
 
   const [errors, setErrors] = useState({});
   const [serverMessage, setServerMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,12 +42,14 @@ const App = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerMessage("");
+    setIsError(false);
     if (validate()) {
       try {
         const response = await axios.post(url, formValues);
 
         if (response.status === 201) {
           setServerMessage(response.data.message);
+          setIsError(false);
           setFormValues({
             firstName: "",
             lastName: "",
@@ -57,14 +60,16 @@ const App = () => {
           });
           setErrors({});
         } else {
-          
           setServerMessage(response.data.message);
+          setIsError(true);
         }
       } catch (error) {
         if (error.response) {
           setServerMessage(error.response.data.message);
+          setIsError(true);
         } else {
           setServerMessage("Server error. Please try again later.");
+          setIsError(true);
         }
       }
     }
@@ -159,6 +164,11 @@ const App = () => {
           )}
           <button type="submit">Get Started</button>
         </form>
+        {serverMessage && (
+          <div className={isError ? "error-message" : "success-message"}>
+            {serverMessage}
+          </div>
+        )}
       </div>
     </div>
   );
